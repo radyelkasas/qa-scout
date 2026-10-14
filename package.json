@@ -1,0 +1,25 @@
+{
+  "name": "qa-scout",
+  "version": "1.0.0",
+  "description": "A Claude Code skill that tests web apps like an experienced QA engineer: visible recorded browser, every button, forms, permissions, cross-page data flows — with highlighted screenshots and reports.",
+  "keywords": ["claude-code", "claude-skill", "qa", "testing", "e2e", "playwright", "accessibility", "i18n", "rtl", "test-report"],
+  "author": {
+    "name": "Rady Elkasas",
+    "url": "https://radyelkasas.com/"
+  },
+  "homepage": "https://radyelkasas.com/",
+  "repository": { "type": "git", "url": "https://github.com/radyelkasas/qa-scout.git" },
+  "bugs": { "url": "https://github.com/radyelkasas/qa-scout/issues" },
+  "license": "MIT",
+  "private": false,
+  "engines": { "node": ">=18" },
+  "files": ["SKILL.md", "README.md", "LICENSE", "CHANGELOG.md", "install.sh", "assets/", "references/", "scripts/"],
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "intake": "node scripts/intake-server.js",
+    "report": "node scripts/report.js"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

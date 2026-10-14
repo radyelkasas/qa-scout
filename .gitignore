@@ -1,0 +1,5 @@
+node_modules/
+.last-config.json
+qa-runs/
+*.log
+.DS_Store

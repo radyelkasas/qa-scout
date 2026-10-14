@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Scout Report</title>
+<meta name="author" content="Rady Elkasas — https://radyelkasas.com/">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#5d6675; --line:#e2e6ec; --accent:#12454f; --soft:#eef3f4;
+    --crit:#b42318; --high:#c4320a; --med:#b54708; --low:#667085; --ok:#067647; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111418; --card:#181c22; --ink:#e8ebf0; --muted:#9aa3b2; --line:#2a303a; --accent:#5aa6b3; --soft:#1f2a2d;
+    --crit:#f97066; --high:#fb6514; --med:#fdb022; --low:#98a2b3; --ok:#47cd89; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 -apple-system,"Segoe UI","IBM Plex Sans Arabic",Tahoma,sans-serif; }
+  header, main { max-width:1200px; margin:0 auto; padding:16px; }
+  header h1 { margin:8px 0 2px; font-size:22px; } header p { margin:0; color:var(--muted); }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:14px 0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .card b { display:block; font-size:24px; } .card > span { color:var(--muted); font-size:12px; } .card .sev { color:#fff; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+  .filters select, .filters input { padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); font:inherit; }
+  .filters input { flex:1; min-width:180px; }
+  .tabs { display:flex; gap:6px; border-bottom:1px solid var(--line); margin-top:8px; flex-wrap:wrap; }
+  .tabs button { background:none; border:0; border-bottom:2px solid transparent; padding:10px 12px; color:var(--muted); font:inherit; cursor:pointer; }
+  .tabs button[aria-selected=true] { color:var(--ink); border-color:var(--accent); font-weight:600; }
+  .f { background:var(--card); border:1px solid var(--line); border-radius:12px; margin:10px 0; display:grid; grid-template-columns:1fr 280px; overflow:hidden; }
+  .f .body { padding:12px 14px; min-width:0; } .f h3 { margin:0 0 4px; font-size:15px; }
+  .meta { color:var(--muted); font-size:12px; display:flex; gap:10px; flex-wrap:wrap; }
+  .sev { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#fff; }
+  .sev.critical{background:var(--crit)} .sev.high{background:var(--high)} .sev.medium{background:var(--med)} .sev.low{background:var(--low)}
+  .f img { width:100%; height:100%; max-height:200px; object-fit:cover; object-position:top; cursor:zoom-in; border-inline-start:1px solid var(--line); background:var(--soft); }
+  .f ol { margin:6px 0; padding-inline-start:20px; } .f p { margin:6px 0; }
+  code { background:var(--soft); padding:1px 5px; border-radius:5px; font-size:12px; word-break:break-all; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th, td { text-align:start; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; } th { font-size:12px; color:var(--muted); }
+  .muted { color:var(--muted); } .hidden { display:none; }
+  #lb { position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; padding:20px; z-index:9; }
+  #lb img { max-width:100%; max-height:100%; border-radius:8px; }
+  details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin:8px 0; }
+  @media (max-width:760px) { .f { grid-template-columns:1fr; } .f img { border:0; border-top:1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header><h1 id="title">QA Dashboard</h1><p id="sub"></p><div class="cards" id="cards"></div></header>
+<main>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="findings">Findings</button>
+    <button role="tab" aria-selected="false" data-t="pages">Pages</button>
+    <button role="tab" aria-selected="false" data-t="flows">Workflows</button>
+    <button role="tab" aria-selected="false" data-t="audit">Automated audit</button>
+  </div>
+  <section id="t-findings">
+    <div class="filters"><select id="fs"><option value="">All severities</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select>
+      <select id="fp"><option value="">All pages</option></select><select id="fc"><option value="">All categories</option></select><input id="fq" placeholder="Search findings…"></div>
+    <div id="list"></div>
+  </section>
+  <section id="t-pages" class="hidden"></section>
+  <section id="t-flows" class="hidden"></section>
+  <section id="t-audit" class="hidden"></section>
+</main>
+<footer style="text-align:center;color:var(--muted);font-size:12px;padding:24px 16px">Generated by <a href="https://github.com/radyelkasas/qa-scout" style="color:inherit">QA Scout</a> · created by <a href="https://radyelkasas.com/" style="color:inherit">Rady Elkasas</a></footer>
+<div id="lb"><img alt=""></div>
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s); const h = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+if (D.cfg.reportLanguage === 'ar') { document.documentElement.dir = 'rtl'; document.documentElement.lang = 'ar'; }
+$('#title').textContent = 'QA Scout — ' + (D.cfg.project || '');
+$('#sub').textContent = `${D.cfg.baseUrl || ''} · ${D.cfg.environment || ''} · ${D.pages.length} pages · ${D.findings.length} findings`;
+const sevs = ['critical', 'high', 'medium', 'low'];
+$('#cards').innerHTML = sevs.map(s => `<div class="card"><b>${D.findings.filter(f => f.severity === s).length}</b><span><span class="sev ${s}">${s}</span></span></div>`).join('') +
+  `<div class="card"><b>${D.flows.filter(f => f.verdict === 'works').length}/${new Set([...D.workflows, ...D.flows.map(f => f.name)]).size}</b><span>workflows working</span></div>`;
+D.pages.forEach(p => $('#fp').insertAdjacentHTML('beforeend', `<option value="${h(p.id)}">${h(p.id)}</option>`));
+[...new Set(D.findings.map(f => f.category))].forEach(c => $('#fc').insertAdjacentHTML('beforeend', `<option>${h(c)}</option>`));
+function card(f) {
+  return `<article class="f"><div class="body"><h3><span class="sev ${f.severity}">${f.severity}</span> ${h(f.id)} — ${h(f.title)}</h3>
+    <div class="meta"><span>${h(f.page)}</span><span>${h(f.category)}</span><span>${h(f.layer || '')}</span><span>verified: ${h(f.verifiedBy || '')}</span>${f.status === 'suspected' ? '<span>⚠ suspected</span>' : ''}</div>
+    ${f.steps?.length ? '<ol>' + f.steps.map(s => `<li>${h(s)}</li>`).join('') + '</ol>' : ''}
+    ${f.expected ? `<p><b>Expected:</b> ${h(f.expected)}</p>` : ''}${f.actual ? `<p><b>Actual:</b> ${h(f.actual)}</p>` : ''}${f.detail ? `<p>${h(f.detail)}</p>` : ''}
+    ${f.where ? `<p><b>Where:</b> <code>${h(f.where)}</code></p>` : ''}
+    <p class="muted">${f.video ? `🎬 <code>${h(f.video)}</code> ` : ''}${f.url ? `· <code>${h(f.url)}</code>` : ''}</p>
+    ${f.network?.length ? '<p class="muted">' + f.network.map(n => `<code>${h(n.method)} ${h(n.url)} → ${h(n.status)}</code>`).join(' ') + '</p>' : ''}
+  </div>${f.screenshot ? `<img loading="lazy" src="${h(f.screenshot)}" alt="${h(f.id)}">` : '<div></div>'}</article>`;
+}
+function render() {
+  const s = $('#fs').value, p = $('#fp').value, c = $('#fc').value, q = $('#fq').value.toLowerCase();
+  const list = D.findings.filter(f => (!s || f.severity === s) && (!p || f.page === p) && (!c || f.category === c) && (!q || JSON.stringify(f).toLowerCase().includes(q)));
+  $('#list').innerHTML = list.map(card).join('') || '<p class="muted">No findings match.</p>';
+}
+['#fs', '#fp', '#fc', '#fq'].forEach(id => $(id).addEventListener('input', render)); render();
+$('#t-pages').innerHTML = '<table><thead><tr><th>Page</th><th>URL</th><th>Findings</th><th>Steps</th><th>What works</th></tr></thead><tbody>' + D.pages.map(p => {
+  const pf = D.findings.filter(f => f.page === p.id);
+  return `<tr><td><b>${h(p.id)}</b><div class="muted">${h(p.notes || '')}</div></td><td><code>${h(p.url)}</code></td><td>${sevs.map(s => pf.filter(f => f.severity === s).length ? `<span class="sev ${s}">${pf.filter(f => f.severity === s).length}</span> ` : '').join('')}</td><td>${D.steps.filter(x => x.page === p.id).length}</td><td>${D.notes.filter(n => n.page === p.id && n.type === 'pass').map(n => '✓ ' + h(n.text)).join('<br>')}</td></tr>`;
+}).join('') + '</tbody></table>';
+const names = [...new Set([...D.workflows, ...D.flows.map(f => f.name)])];
+$('#t-flows').innerHTML = '<table><thead><tr><th>Workflow</th><th>Verdict</th><th>Detail</th></tr></thead><tbody>' + names.map(n => { const v = D.flows.filter(f => f.name === n).pop(); return `<tr><td>${h(n)}</td><td>${v ? ({ works: '✅ works', broken: '❌ broken', partial: '⚠️ partial', blocked: '⛔ blocked' }[v.verdict] || h(v.verdict)) : '⏳ not run'}</td><td>${h(v?.detail || '')}</td></tr>`; }).join('') + '</tbody></table>' +
+  '<h3>Interconnection findings</h3>' + D.findings.filter(f => f.category === 'interconnection' || f.related?.length).map(card).join('');
+$('#t-audit').innerHTML = D.audits.map(a => `<details><summary><b>${h(a.page)}</b> — ${h(a.name || 'audit')} · ${a.issues.length} candidates</summary>${a.screenshot ? `<p><a href="${h(a.screenshot)}" target="_blank">screenshot</a></p>` : ''}<ul>${a.issues.map(i => `<li><span class="sev ${i.severity}">${i.severity}</span> <b>${h(i.rule)}</b> — ${h(i.message)} ${i.selector ? `<code>${h(i.selector)}</code>` : ''}</li>`).join('')}</ul></details>`).join('') || '<p class="muted">No audits recorded.</p>';
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); ['findings', 'pages', 'flows', 'audit'].forEach(t => $('#t-' + t).classList.toggle('hidden', t !== b.dataset.t)); });
+document.addEventListener('click', e => { if (e.target.matches('.f img')) { $('#lb img').src = e.target.src; $('#lb').style.display = 'flex'; } else if (e.target.closest('#lb')) $('#lb').style.display = 'none'; });
+</script>
+</body>
+</html>

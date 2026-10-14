@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Scout Setup</title>
+<meta name="author" content="Rady Elkasas — https://radyelkasas.com/">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #141821; --muted: #5f6878; --faint: #8a93a3; --line: #e1e5eb;
+    --accent: #0f5c63; --accent-2: #12808a; --accent-ink: #ffffff; --soft: #e8f2f3; --drop: #f0f7f8;
+    --danger: #b42318; --ok: #067647; --warn: #b54708; --chip: #eef1f5; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) { :root {
+    --bg: #0f1216; --card: #171b21; --ink: #e9ecf1; --muted: #a0a9b8; --faint: #7d8696; --line: #2a3039;
+    --accent: #4fb3bd; --accent-2: #6cc6cf; --accent-ink: #0b1013; --soft: #16292b; --drop: #13211f; --chip: #222831; --shadow: none; } }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "IBM Plex Sans Arabic", Tahoma, sans-serif; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 28px 0 6px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; color: var(--accent-ink); flex: none; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+  .tag { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  main { padding: 10px 0 140px; }
+
+  .drop { margin: 18px 0 8px; border: 2px dashed var(--line); border-radius: 16px; background: var(--drop); padding: 22px 18px; text-align: center; transition: border-color .15s, background .15s; cursor: pointer; }
+  .drop.over { border-color: var(--accent); background: var(--soft); }
+  .drop strong { display: block; font-size: 16px; margin: 6px 0 2px; }
+  .drop p { margin: 0; color: var(--muted); font-size: 13px; }
+  .drop .types { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .drop .types span { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--muted); }
+  .drop textarea { display: none; }
+  .parsed { min-height: 22px; font-size: 13px; color: var(--ok); text-align: center; margin-bottom: 6px; }
+  .parsed.err { color: var(--danger); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin: 14px 0; box-shadow: var(--shadow); }
+  .card-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .card-h h2 { font-size: 16px; margin: 0; }
+  .num { width: 24px; height: 24px; border-radius: 50%; background: var(--soft); color: var(--accent); font-weight: 700; font-size: 13px; display: inline-grid; place-items: center; flex: none; }
+  .card-h p { margin: 0; color: var(--muted); font-size: 13px; flex-basis: 100%; padding-inline-start: 34px; }
+
+  input[type=text], input[type=url], input[type=password], input[type=number], input[type=email], select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-weight: 400; }
+  input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  ::placeholder { color: var(--faint); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > input { flex: 1; min-width: 0; }
+  .btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 9px 14px; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.ghost { border-style: dashed; }
+  .btn.sm { padding: 6px 10px; font-size: 13px; }
+  .status { font-size: 13px; margin-top: 8px; color: var(--muted); }
+  .status .ok { color: var(--ok); } .status .bad { color: var(--danger); }
+
+  .acc { display: grid; grid-template-columns: 130px 1fr 1fr 34px; gap: 8px; margin-bottom: 8px; }
+  .acc select, .acc input { padding: 8px 10px; }
+  .x { border: 0; background: none; color: var(--faint); cursor: pointer; font-size: 18px; border-radius: 8px; }
+  .x:hover { color: var(--danger); background: var(--chip); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; min-height: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; max-width: 100%; }
+  .chip code { font: 12px ui-monospace, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 420px; }
+  .chip .star { border: 0; background: none; cursor: pointer; color: var(--faint); padding: 0 2px; font-size: 14px; }
+  .chip.high { border-color: var(--accent); } .chip.high .star { color: var(--warn); }
+  .chip .x { font-size: 15px; padding: 0 4px; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .suggest button { border: 1px dashed var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .suggest button:hover { color: var(--ink); border-color: var(--accent); }
+  .switch { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14px; cursor: pointer; }
+  .switch input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; }
+  .switch small { display: block; color: var(--muted); font-size: 12px; }
+
+  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .preset { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; background: var(--bg); text-align: start; color: var(--ink); font: inherit; }
+  .preset b { display: block; font-size: 15px; } .preset span { color: var(--muted); font-size: 12px; }
+  .preset[aria-pressed=true] { border-color: var(--accent); background: var(--soft); }
+
+  details.adv { margin-top: 14px; }
+  details.adv summary { cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; }
+  details.adv summary::before { content: '▸ '; } details.adv[open] summary::before { content: '▾ '; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 14px; margin-top: 12px; }
+  label.f { display: block; font-size: 13px; font-weight: 600; }
+  label.f small { display: block; color: var(--muted); font-weight: 400; margin-bottom: 4px; }
+  label.f input, label.f select, label.f textarea { margin-top: 4px; }
+  .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 6px 14px; margin-top: 12px; font-size: 14px; }
+  .checks label { display: flex; gap: 8px; align-items: flex-start; } .checks input { accent-color: var(--accent); margin-top: 4px; }
+
+  .bar { position: fixed; inset: auto 0 0 0; background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--line); }
+  .bar .wrap { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
+  .summary { color: var(--muted); font-size: 13px; }
+  .summary b { color: var(--ink); }
+  .bar .go { font-size: 15px; padding: 11px 22px; }
+  footer { color: var(--faint); font-size: 12px; text-align: center; padding: 10px 0 0; }
+  footer a { color: inherit; }
+  .done { text-align: center; padding: 90px 16px; }
+  @media (max-width: 640px) { .acc { grid-template-columns: 1fr 34px; } .acc input { grid-column: 1; } .presets { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/><path d="m8.5 11 1.8 1.8L14 9.2"/></svg></div>
+    <div><h1>QA Scout</h1><p class="tag">Tell it where and who — it explores, tests and reports with evidence.</p></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Drop or paste files and lists">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+    <strong>Drop anything here — or paste (⌘V / Ctrl+V)</strong>
+    <p>Fills the form for you. Click to browse.</p>
+    <div class="types"><span>previous config.json</span><span>list of URLs (.txt / .md)</span><span>sitemap.xml</span><span>accounts .csv</span><span>notes with links</span></div>
+    <input type="file" id="file" multiple hidden accept=".json,.txt,.md,.csv,.xml,.tsv">
+  </div>
+  <div class="parsed" id="parsed" aria-live="polite"></div>
+
+  <section class="card">
+    <div class="card-h"><span class="num">1</span><h2>App</h2><p>The address of the app to test — use a test or staging environment.</p></div>
+    <div class="row"><input type="url" id="baseUrl" placeholder="https://staging.example.com" autocomplete="url"><button type="button" class="btn" id="check">Check</button></div>
+    <div class="status" id="checkStatus"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><span class="num">2</span><h2>Accounts</h2><p>One admin is enough to start. Add a limited user to test permissions and an end user (e.g. student/customer) to see what they see.</p></div>
+    <div id="accounts"></div>
+    <div class="row" style="gap:8px; flex-wrap:wrap">
+      <button type="button" class="btn ghost sm" id="addAcc">+ Account</button>
+      <button type="button" class="btn ghost sm" id="pasteAcc">Paste accounts</button>
+      <span class="status" style="margin:0">Format: <code>email password role</code> — one per line</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><span class="num">3</span><h2>Pages</h2><p>Type a path and press Enter, drop a list above, or let QA Scout find pages itself. ★ = high priority.</p></div>
+    <div class="row"><input type="text" id="pageInput" placeholder="/orders  or  https://app.example.com/orders  (Enter to add)"><button type="button" class="btn" id="sitemap">From sitemap</button></div>
+    <div class="chips" id="pages"></div>
+    <label class="switch"><input type="checkbox" id="autoDiscover"><span>Explore the app's menu after login and add the pages it finds<small>Great for single-page apps without a sitemap. Up to <input type="number" id="maxPages" value="20" min="1" max="200" style="width:64px;padding:2px 6px;display:inline-block"> pages.</small></span></label>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><span class="num">4</span><h2>Workflows <span style="font-weight:400;color:var(--muted);font-size:13px">(optional)</span></h2><p>Journeys that cross pages — where most serious bugs hide. Click a suggestion or write your own.</p></div>
+    <input type="text" id="flowInput" placeholder="e.g. create order → pay → admin approves → customer sees invoice (Enter to add)">
+    <div class="chips" id="flows"></div>
+    <div class="suggest" id="flowSuggest"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><span class="num">5</span><h2>How deep?</h2></div>
+    <div class="presets" role="group" aria-label="Test depth">
+      <button type="button" class="preset" data-preset="smoke"><b>Quick</b><span>Loads, main actions, console & network errors</span></button>
+      <button type="button" class="preset" data-preset="standard" aria-pressed="true"><b>Standard</b><span>Every button, CRUD, validation, language, cross-page checks</span></button>
+      <button type="button" class="preset" data-preset="deep"><b>Deep</b><span>+ permissions, boundaries, data verification, security basics</span></button>
+    </div>
+
+    <details class="adv" id="adv">
+      <summary>Advanced options</summary>
+      <div class="grid">
+        <label class="f">Project name<input type="text" id="project" placeholder="My app — staging"></label>
+        <label class="f">Login path<small>Auto: /login</small><input type="text" id="loginPath" placeholder="/login"></label>
+        <label class="f">API base URL<small>Lets the tester verify saved data</small><input type="url" id="apiBase" placeholder="https://api.example.com/v1"></label>
+        <label class="f">Environment<select id="environment"><option value="local">Local / isolated test data</option><option value="staging">Shared staging</option><option value="production">Production (observe only)</option></select></label>
+        <label class="f">Creating & deleting data<select id="destructive"><option value="qa-data-only">Only on records it creates ("QA …")</option><option value="allowed">Allowed (isolated DB)</option><option value="none">Never — observe only</option></select></label>
+        <label class="f">App languages to test<small>Comma-separated, e.g. en, ar</small><input type="text" id="languages" placeholder="en"></label>
+        <label class="f">Report language<select id="reportLanguage"><option value="en">English</option><option value="ar">العربية</option></select></label>
+        <label class="f">Viewport<select id="viewport"><option value="1440x860">Desktop 1440×860</option><option value="1280x800">Laptop 1280×800</option><option value="1920x1080">Full HD 1920×1080</option></select></label>
+        <label class="f">Show the browser<select id="headed"><option value="true">Yes — watch it live</option><option value="false">No — headless</option></select></label>
+        <label class="f">Record video per page<select id="video"><option value="true">Yes</option><option value="false">No</option></select></label>
+        <label class="f">Slow motion (ms)<input type="number" id="slowMo" value="50" min="0" max="1000"></label>
+        <label class="f">API rate limit (req/min)<input type="number" id="rateLimit" value="200" min="20"></label>
+        <label class="f">Frontend repo path<small>For root-cause analysis</small><input type="text" id="frontendRepo" placeholder="~/code/my-app-web"></label>
+        <label class="f">Backend repo path<input type="text" id="backendRepo" placeholder="~/code/my-app-api"></label>
+        <label class="f">Read-only DB command<small>e.g. psql -h localhost -d app_test</small><input type="text" id="dbCommand"></label>
+        <label class="f">Main content selector<small>Optional, e.g. main, #content</small><input type="text" id="contentSelector"></label>
+      </div>
+      <div class="checks" id="focus">
+        <label><input type="checkbox" value="functional"> Functional — buttons, CRUD, search, filters</label>
+        <label><input type="checkbox" value="validation"> Validation — empty, invalid, boundaries</label>
+        <label><input type="checkbox" value="interconnection"> Cross-page data & delete-in-use</label>
+        <label><input type="checkbox" value="permissions"> Permissions (needs a limited account)</label>
+        <label><input type="checkbox" value="i18n"> Language & RTL</label>
+        <label><input type="checkbox" value="a11y"> Accessibility</label>
+        <label><input type="checkbox" value="responsive"> Phone width</label>
+        <label><input type="checkbox" value="darkmode"> Dark mode</label>
+        <label><input type="checkbox" value="console"> Console & network errors</label>
+        <label><input type="checkbox" value="data"> Data verification (API/DB)</label>
+        <label><input type="checkbox" value="security"> Security basics</label>
+      </div>
+      <label class="f" style="margin-top:12px">Notes for the tester<textarea id="notes" rows="3" placeholder="Known flaky areas, data that must not be touched, business rules…"></textarea></label>
+      <label class="switch"><input type="checkbox" id="rememberPasswords"><span>Remember passwords for the next run<small>Stored only on this machine, next to the tool.</small></span></label>
+    </details>
+  </section>
+  <footer>QA Scout · made by <a href="https://radyelkasas.com/" target="_blank" rel="noopener">Rady Elkasas</a> · nothing leaves your machine</footer>
+</main>
+
+<div class="bar"><div class="wrap">
+  <span class="summary" id="summary"></span>
+  <span class="row" style="gap:8px">
+    <button type="button" class="btn sm" id="export" title="Download this setup as JSON to reuse or share">Export</button>
+    <button type="button" class="btn primary go" id="start">Start testing →</button>
+  </span>
+</div></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const PRESETS = {
+  smoke: { depth: 'smoke', focus: ['functional', 'console'] },
+  standard: { depth: 'standard', focus: ['functional', 'validation', 'interconnection', 'i18n', 'a11y', 'console', 'data'] },
+  deep: { depth: 'deep', focus: ['functional', 'validation', 'interconnection', 'permissions', 'i18n', 'a11y', 'responsive', 'console', 'data', 'security'] },
+};
+const FLOW_SUGGESTIONS = [
+  'create a record → it appears everywhere it should (lists, pickers, reports)',
+  'delete something that is used elsewhere → what happens to the places using it',
+  'admin changes / publishes → end user sees the change',
+  'limited user tries every page and action → hidden vs blocked',
+  'edit a value that feeds totals/prices/grades → every computed number updates correctly',
+];
+const state = { pages: [], flows: [], accounts: [], preset: 'standard' };
+
+// ---------- accounts ----------
+function accRow(a = {}) {
+  const el = document.createElement('div'); el.className = 'acc';
+  el.innerHTML = `<select aria-label="Role"><option value="admin">Admin</option><option value="limited">Limited user</option><option value="enduser">End user</option><option value="other">Other</option></select>
+    <input type="text" placeholder="email or username" aria-label="Login" autocomplete="off">
+    <input type="password" placeholder="password" aria-label="Password" autocomplete="new-password">
+    <button type="button" class="x" title="Remove" aria-label="Remove account">×</button>`;
+  const [role, id, pw] = el.querySelectorAll('select, input');
+  role.value = a.role || (document.querySelectorAll('.acc').length ? 'limited' : 'admin'); id.value = a.identifier || ''; pw.value = a.password || '';
+  el.querySelector('.x').onclick = () => { el.remove(); update(); };
+  el.addEventListener('input', update);
+  $('#accounts').appendChild(el); update();
+}
+function readAccounts() {
+  const count = {};
+  return [...document.querySelectorAll('.acc')].map(el => { const [r, i, p] = el.querySelectorAll('select, input'); count[r.value] = (count[r.value] || 0) + 1; return { label: count[r.value] > 1 ? `${r.value}${count[r.value]}` : r.value, role: r.value, identifier: i.value.trim(), password: p.value }; }).filter(a => a.identifier);
+}
+$('#addAcc').onclick = () => accRow();
+$('#pasteAcc').onclick = async () => {
+  let text = ''; try { text = await navigator.clipboard.readText(); } catch {}
+  if (!text) text = prompt('Paste accounts — one per line: email password role') || '';
+  const n = ingestAccounts(text); flash(n ? `Added ${n} account(s).` : 'No accounts found in that text.', !n);
+};
+function ingestAccounts(text) {
+  let n = 0;
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(/([^\s,;|]+@[^\s,;|]+|[\w.+-]{3,})\s*[,;|\t ]\s*(\S+)(?:\s*[,;|\t ]\s*(admin|limited|staff|user|enduser|end user|student|customer|other))?/i);
+    if (!m || !/@|\d/.test(m[1]) || /^https?:/.test(m[1])) continue;
+    const roleWord = (m[3] || '').toLowerCase();
+    const role = /admin/.test(roleWord) ? 'admin' : /student|customer|enduser|end user|user/.test(roleWord) ? 'enduser' : /limited|staff/.test(roleWord) ? 'limited' : undefined;
+    const empty = [...document.querySelectorAll('.acc')].find(el => !el.querySelectorAll('input')[0].value);
+    if (empty) { const [r, i, p] = empty.querySelectorAll('select, input'); if (role) r.value = role; i.value = m[1]; p.value = m[2]; }
+    else accRow({ identifier: m[1], password: m[2], role });
+    n++;
+  }
+  update(); return n;
+}
+
+// ---------- pages & flows (chips) ----------
+function normPath(u) {
+  u = String(u).trim().replace(/[),.;'"]+$/, ''); if (!u) return null;
+  const base = $('#baseUrl').value.trim().replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(u)) {
+    try { const url = new URL(u); if (!base) $('#baseUrl').value = url.origin; if (!base || url.origin === new URL(base).origin) return (url.pathname + url.search) || '/'; return u; } catch { return null; }
+  }
+  return u.startsWith('/') ? u : '/' + u;
+}
+function addPage(u, priority = 'normal') { const p = normPath(u); if (!p || state.pages.some(x => x.url === p)) return false; state.pages.push({ url: p, priority, notes: '' }); renderPages(); return true; }
+function renderPages() {
+  $('#pages').innerHTML = '';
+  state.pages.forEach((p, i) => {
+    const c = document.createElement('span'); c.className = 'chip' + (p.priority === 'high' ? ' high' : '');
+    c.innerHTML = `<button type="button" class="star" title="High priority" aria-label="Toggle high priority">${p.priority === 'high' ? '★' : '☆'}</button><code></code><button type="button" class="x" aria-label="Remove page">×</button>`;
+    c.querySelector('code').textContent = p.url; c.querySelector('code').title = p.url;
+    c.querySelector('.star').onclick = () => { p.priority = p.priority === 'high' ? 'normal' : 'high'; renderPages(); };
+    c.querySelector('.x').onclick = () => { state.pages.splice(i, 1); renderPages(); };
+    $('#pages').appendChild(c);
+  });
+  update();
+}
+function addFlow(t) { t = t.trim(); if (!t || state.flows.includes(t)) return; state.flows.push(t); renderFlows(); }
+function renderFlows() {
+  $('#flows').innerHTML = '';
+  state.flows.forEach((f, i) => { const c = document.createElement('span'); c.className = 'chip'; c.innerHTML = '<code></code><button type="button" class="x" aria-label="Remove workflow">×</button>'; c.querySelector('code').textContent = f; c.querySelector('code').style.maxWidth = '640px'; c.querySelector('.x').onclick = () => { state.flows.splice(i, 1); renderFlows(); }; $('#flows').appendChild(c); });
+  $('#flowSuggest').innerHTML = '';
+  FLOW_SUGGESTIONS.filter(s => !state.flows.includes(s)).forEach(s => { const b = document.createElement('button'); b.type = 'button'; b.textContent = '+ ' + s; b.onclick = () => addFlow(s); $('#flowSuggest').appendChild(b); });
+  update();
+}
+$('#pageInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value; let n = 0; v.split(/[\s,]+/).forEach(x => { if (addPage(x)) n++; }); e.target.value = ''; if (!n && v.trim()) flash('Already in the list.', true); } });
+$('#flowInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addFlow(e.target.value); e.target.value = ''; } });
+
+// ---------- smart import (drop / paste / browse) ----------
+const drop = $('#drop');
+drop.onclick = () => $('#file').click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } };
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { if (ev === 'dragleave' && e.relatedTarget) return; drop.classList.remove('over'); }));
+document.addEventListener('drop', async e => { e.preventDefault(); if (e.dataTransfer.files.length) for (const f of e.dataTransfer.files) ingest(await f.text(), f.name); else ingest(e.dataTransfer.getData('text'), 'dropped text'); });
+$('#file').onchange = async e => { for (const f of e.target.files) ingest(await f.text(), f.name); e.target.value = ''; };
+document.addEventListener('paste', e => { const t = e.clipboardData.getData('text'); if (!t) return; const tag = document.activeElement?.tagName; if ((tag === 'INPUT' || tag === 'TEXTAREA') && !/\n/.test(t)) return; e.preventDefault(); ingest(t, 'pasted text'); });
+
+function ingest(text, source) {
+  text = String(text || '').trim(); if (!text) return;
+  const before = { p: state.pages.length, a: readAccounts().length, f: state.flows.length };
+  let kind = 'text';
+  if (/^[{\[]/.test(text)) {
+    try {
+      const j = JSON.parse(text);
+      if (j && (j.baseUrl || j.pages || j.accounts)) { applyConfig(j); kind = 'QA Scout config'; }
+      else { [...text.matchAll(/https?:\/\/[^\s"'<>]+/g)].forEach(m => addPage(m[0])); kind = 'JSON'; }
+    } catch { kind = 'text'; }
+  }
+  if (kind === 'text') {
+    if (/<urlset|<sitemapindex|<loc>/i.test(text)) { [...text.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].forEach(m => addPage(m[1])); kind = 'sitemap'; }
+    else {
+      ingestAccounts(text);
+      [...text.matchAll(/https?:\/\/[^\s"'<>)\]]+/g)].forEach(m => addPage(m[0]));
+      text.split(/\r?\n/).forEach(l => { const t = l.trim().replace(/^[-*•\d.)\s]+/, ''); if (/^\/[\w\-./?=&%#:]*$/.test(t)) addPage(t); if (/→|->/.test(t) && !/^https?:/.test(t)) addFlow(t.replace(/->/g, '→').replace(/^[^→:]{1,24}:\s*/, '')); });
+    }
+  }
+  const got = { p: state.pages.length - before.p, a: readAccounts().length - before.a, f: state.flows.length - before.f };
+  const parts = [got.p && `${got.p} page(s)`, got.a && `${got.a} account(s)`, got.f && `${got.f} workflow(s)`].filter(Boolean);
+  flash(kind === 'QA Scout config' ? `Loaded setup from ${source}.` : parts.length ? `From ${source}: ${parts.join(' · ')}` : `Nothing recognisable in ${source}.`, !parts.length && kind !== 'QA Scout config');
+}
+function flash(msg, err) { const el = $('#parsed'); el.textContent = msg; el.className = 'parsed' + (err ? ' err' : ''); clearTimeout(flash.t); flash.t = setTimeout(() => { el.textContent = ''; }, 6000); }
+
+// ---------- presets / advanced ----------
+function setPreset(name) {
+  state.preset = name;
+  document.querySelectorAll('.preset').forEach(b => b.setAttribute('aria-pressed', b.dataset.preset === name));
+  document.querySelectorAll('#focus input').forEach(c => c.checked = PRESETS[name].focus.includes(c.value));
+  update();
+}
+document.querySelectorAll('.preset').forEach(b => b.onclick = () => setPreset(b.dataset.preset));
+const ADV = ['project', 'loginPath', 'apiBase', 'environment', 'destructive', 'languages', 'reportLanguage', 'viewport', 'headed', 'video', 'slowMo', 'rateLimit', 'frontendRepo', 'backendRepo', 'dbCommand', 'contentSelector', 'notes'];
+
+function collect() {
+  const cfg = { baseUrl: $('#baseUrl').value.trim().replace(/\/+$/, ''), accounts: readAccounts(), pages: state.pages.slice(), workflows: state.flows.slice(), depth: PRESETS[state.preset].depth, preset: state.preset,
+    focus: [...document.querySelectorAll('#focus input:checked')].map(c => c.value), autoDiscover: $('#autoDiscover').checked, maxPages: Number($('#maxPages').value || 20), rememberPasswords: $('#rememberPasswords').checked };
+  for (const k of ADV) cfg[k] = $('#' + k).value.trim();
+  cfg.loginPath = cfg.loginPath || '/login';
+  cfg.languages = cfg.languages || 'en';
+  if (!cfg.project) { try { cfg.project = new URL(cfg.baseUrl).host; } catch { cfg.project = 'QA run'; } }
+  return cfg;
+}
+function applyConfig(c) {
+  if (c.baseUrl) $('#baseUrl').value = c.baseUrl;
+  for (const k of ADV) if (c[k] != null && $('#' + k)) $('#' + k).value = Array.isArray(c[k]) ? c[k].join(', ') : c[k];
+  if (Array.isArray(c.accounts) && c.accounts.length) { $('#accounts').innerHTML = ''; c.accounts.forEach(a => accRow(a)); }
+  (c.pages || []).forEach(p => addPage(p.url || p, p.priority || 'normal'));
+  (c.workflows || []).forEach(addFlow);
+  if (c.autoDiscover != null) $('#autoDiscover').checked = !!c.autoDiscover;
+  if (c.maxPages) $('#maxPages').value = c.maxPages;
+  if (c.rememberPasswords) $('#rememberPasswords').checked = true;
+  setPreset(c.preset || ({ smoke: 'smoke', deep: 'deep' }[c.depth]) || 'standard');
+  if (Array.isArray(c.focus) && c.focus.length) document.querySelectorAll('#focus input').forEach(x => x.checked = c.focus.includes(x.value));
+}
+function update() {
+  const c = collect();
+  const pageText = c.pages.length ? `<b>${c.pages.length}</b> page${c.pages.length > 1 ? 's' : ''}` : c.autoDiscover ? '<b>auto</b> pages' : '<b>0</b> pages';
+  $('#summary').innerHTML = `${pageText} · <b>${c.accounts.length}</b> account${c.accounts.length === 1 ? '' : 's'} · <b>${c.workflows.length}</b> workflow${c.workflows.length === 1 ? '' : 's'} · ${$('.preset[aria-pressed=true] b').textContent}`;
+}
+document.addEventListener('input', update); document.addEventListener('change', update);
+
+// ---------- server helpers ----------
+$('#check').onclick = async () => {
+  const url = $('#baseUrl').value.trim(); const st = $('#checkStatus');
+  if (!url) { st.innerHTML = '<span class="bad">Enter the app address first.</span>'; return; }
+  st.textContent = 'Checking…';
+  try { const r = await (await fetch('/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) })).json();
+    st.innerHTML = r.ok ? `<span class="ok">● Reachable</span> — HTTP ${r.status}${r.title ? ' · “' + r.title.replace(/</g, '&lt;') + '”' : ''}${r.spa ? ' · looks like a single-page app (menu discovery recommended)' : ''}` : `<span class="bad">● Not reachable</span> — ${r.error || 'HTTP ' + r.status}`;
+    if (r.ok && r.spa && !state.pages.length) $('#autoDiscover').checked = true; update();
+  } catch (e) { st.innerHTML = '<span class="bad">Check failed.</span>'; }
+};
+$('#sitemap').onclick = async () => {
+  const url = $('#baseUrl').value.trim(); if (!url) { flash('Enter the app address first.', true); return; }
+  flash('Looking for a sitemap and links…');
+  try { const r = await (await fetch('/discover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) })).json();
+    let n = 0; (r.paths || []).forEach(p => { if (addPage(p)) n++; });
+    flash(n ? `Added ${n} page(s) from ${r.source}.` : `No pages found${r.source ? ' in ' + r.source : ''} — turn on menu exploration below.`, !n);
+    if (!n) $('#autoDiscover').checked = true; update();
+  } catch { flash('Discovery failed.', true); }
+};
+$('#export').onclick = () => { const c = collect(); if (!c.rememberPasswords) c.accounts = c.accounts.map(a => ({ ...a, password: '' })); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(c, null, 2)], { type: 'application/json' })); a.download = 'qa-scout-setup.json'; a.click(); };
+
+$('#start').onclick = async () => {
+  const c = collect();
+  if (!/^https?:\/\//.test(c.baseUrl)) { flash('Add the app address (step 1).', true); $('#baseUrl').focus(); return; }
+  if (!c.accounts.length) { flash('Add at least one account (step 2).', true); return; }
+  if (!c.pages.length && !c.autoDiscover) { flash('Add pages or turn on menu exploration (step 3).', true); $('#pageInput').focus(); return; }
+  $('#start').disabled = true; $('#start').textContent = 'Saving…';
+  const r = await fetch('/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(c) });
+  const out = await r.json();
+  if (!r.ok) { flash(out.error || 'Save failed', true); $('#start').disabled = false; $('#start').textContent = 'Start testing →'; return; }
+  document.body.innerHTML = `<div class="done"><div class="logo" style="margin:0 auto 14px;width:56px;height:56px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 4.5 4.5L19 7"/></svg></div><h2>Setup saved — QA Scout is starting</h2><p style="color:var(--muted)">Go back to Claude Code. You can close this tab.</p><p><code>${out.path.replace(/</g, '&lt;')}</code></p><footer>QA Scout · made by <a href="https://radyelkasas.com/" target="_blank" rel="noopener">Rady Elkasas</a></footer></div>`;
+};
+document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') $('#start').click(); });
+
+// ---------- boot ----------
+renderFlows(); setPreset('standard');
+fetch('/defaults').then(r => r.json()).then(d => { if (d && Object.keys(d).length) { applyConfig(d); flash('Loaded your last setup — change anything you like.'); } if (!document.querySelector('.acc')) accRow({ role: 'admin' }); update(); }).catch(() => { accRow({ role: 'admin' }); });
+})();
+</script>
+</body>
+</html>
