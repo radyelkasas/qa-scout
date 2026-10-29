@@ -1,3 +1,11 @@
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-7c5cff?style=flat-square" alt="MIT License"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/github/v/tag/radyelkasas/qa-scout?label=version&style=flat-square&color=22d3ee" alt="Version"></a>
+  <img src="https://img.shields.io/badge/Claude_Code-skill-d97757?style=flat-square" alt="Claude Code skill">
+  <img src="https://img.shields.io/badge/Playwright-headed_%26_recorded-2EAD33?style=flat-square&logo=playwright&logoColor=white" alt="Playwright">
+  <img src="https://img.shields.io/badge/reports-English_·_Arabic-111a33?style=flat-square" alt="Reports in English and Arabic">
+</p>
+
 # QA Scout
 
 **A Claude Code skill that tests your web app the way an experienced QA engineer does — and shows its work.**
@@ -9,7 +17,16 @@ workflows/interconnections report, and a filterable HTML dashboard.
 
 Created by **[Rady Elkasas](https://radyelkasas.com/)** · MIT License
 
+![QA Scout in action — setup, live recorded testing, report](docs/demo.gif)
+
+<details>
+<summary>Setup page screenshot</summary>
+
 ![QA Scout setup page](docs/setup-page.png)
+
+</details>
+
+⭐ **If QA Scout saves you a bug hunt, a star helps other developers find it.**
 
 ---
 
